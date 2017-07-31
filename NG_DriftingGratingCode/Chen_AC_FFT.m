@@ -122,7 +122,7 @@ end
 time = endTime - startTime;
 numBins = endBin - startBin;
 numCells = length(cellsToPlot);
-fourHzScores = zeros(numCells,2);
+fourHzTop3 = zeros(numCells,2);
 AC_FFT_analysis = cell(numCells+1,1);
 
 %set some variables for autocorrelation
@@ -217,10 +217,14 @@ for cIndex = 1:numCells
     maxAmps = ampRankValues(1:20);
     maxFreqs = freqs(ampRankIndex(1:20));
     
-    %find avg of the three strongest amps between 3.5 and 4.5 Hz
+    % find avg of the three strongest amps between 3.5 and 4.5 Hz, and normalize
+    % according to 3*peak_avg
     rank4Hz = sort( F(351:451), 'descend');
-    fourHzScores(cIndex,2) = mean(rank4Hz(1:3));
-    fourHzScores(cIndex,1) = c;
+    fourHzTop3(cIndex,2) = mean(rank4Hz(1:3)) / ((sum(F)/5000)*3);
+    if isnan(fourHzTop3(cIndex,2))
+        fourHzTop3(cIndex,2) = 0;
+    end
+    fourHzTop3(cIndex,1) = c;
     
     
 % OUTPUT
@@ -240,8 +244,8 @@ for cIndex = 1:numCells
     AC_FFT_analysis{c} = s;        
 end
 
-    fourHzScores = sortrows(fourHzScores, 2, 'descend');
-    s = struct('Cell_4HzScore', fourHzScores);
+    fourHzTop3 = sortrows(fourHzTop3, 2, 'descend');
+    s = struct('Cell_4HzScore', fourHzTop3);
     AC_FFT_analysis{numCells + 1} = s;
     
 %save the output analysis
