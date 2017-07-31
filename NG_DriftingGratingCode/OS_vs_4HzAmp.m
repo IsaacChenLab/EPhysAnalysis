@@ -72,7 +72,21 @@ Select_Scores = Select_Scores(LikesTheta,:);
 %plot
 name = 'Orientation Selectivity vs 4Hz Amplitudue';
 f = figure('Name', name, 'NumberTitle', 'off');
-scatter(Select_Scores(:,3), Hz_Scores(:,2));
+x = Select_Scores(:,3);
+y = Hz_Scores(:,2);
+
+scatter(x,y);
+hold on
+
+X = [ones(length(x),1) x];
+b = X\y;
+yCalc2 = X*b;
+plot(x,yCalc2,'-');
+Rsq = 1 - sum((y - yCalc2).^2)/sum((y - mean(y)).^2);
+dim = [.2 .5 .3 .3];
+str = ['r2 = ', num2str(Rsq)];
+annotation('textbox',dim,'String',str,'FitBoxToText','on');
+
 title(name);
 xlabel('Orientation Selectivity');
 xlim([0 1]);
