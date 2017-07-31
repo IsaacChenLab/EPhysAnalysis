@@ -60,8 +60,10 @@ if ~exist('selectivityFile', 'var')
     [data_file, data_path] = uigetfile('*.mat','Select .mat file...');
     fprintf("Selected!\n");
     selectivityFile = strcat(data_path, data_file);
+    load(selectivityFile);
+else
+    resultantVectors = selectivityFile;
 end
-load(selectivityFile);
  
 % get and load the spikes.mat file
 % this is where dvSpikes comes from
@@ -70,8 +72,10 @@ if ~exist('spikesFile', 'var')
     [data_file, data_path] = uigetfile('*.mat','Select .mat file...');
     fprintf("Selected!\n");
     spikesFile = strcat(data_path, data_file);
+    load(spikesFile);
+else
+    dvSpikes = spikesFile;
 end
-load(spikesFile);
  
 %prompt for file where output should be saved and create folder
 if ~(strcmpi(outputFolder, 'dont save') || outputFolder(1) == '@')

@@ -56,7 +56,7 @@ if ~exist('dataMatrix', 'var')
     fprintf("Selected!\n");
     M = csvread(strcat(data_path, data_file)); 
 else
-    M = csvread(dataMatrix);
+    M = dataMatrix;
 end
 
 %if the 'screenOff' columns are still in there
@@ -71,7 +71,6 @@ if ~(strcmpi(outputFolder, 'dont save') || outputFolder(1) == '@')
     fprintf('Selected!\n');
     target_folder = strcat(target_folder, '/', outputFolder);
 end
-
 
 %if complete path was given as outputFolder argument, set target_folder to
 %output folder
@@ -127,11 +126,9 @@ for c = cellsToPlot
     
     %plot orientation selectivity
     polarplot(paxV, [0 pref_theta], [0 selectivity]);
-
 end
 
 resultantVectors = sortrows(resultantVectors, 3, 'descend');
-
 
 %save the file
 if ~strcmpi(outputFolder, 'dont save')

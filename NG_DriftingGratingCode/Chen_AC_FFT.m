@@ -1,6 +1,6 @@
 function AC_FFT_analysis = Chen_AC_FFT(outputFolder, startTime, endTime,...
                                        binSize, cellsToPlot, maxLag,...
-                                       localMaxWidth,showPlots, binMatrixFile)
+                                       localMaxWidth,showPlots, binMatrix)
 
 % FUNCTION ARGUMENTS
 %   outputFolder = name (in SINGLE quotes) of output folder which will be 
@@ -24,10 +24,9 @@ function AC_FFT_analysis = Chen_AC_FFT(outputFolder, startTime, endTime,...
 %   showPlots = optional; set to 'dont show' if you don't want the figure
 %       windows to pop up. They'll still be saved unless 'dont save' is
 %       specified.
-%   binMatrixFile = optional; if you want to pass in the complete path to
-%       the data file as an argument (like if this function is being called
-%       within another script) then you won't be prompted to select a data
-%       file.
+%   binMatrix = optional; if you want to pass in the actual variable as an
+%       argument (like if this function is being called within another
+%       script) then you won't be prompted to select a data file.
 
 % IN-FUNCTION PROMPTS
 %   1. .mat file which is output from FC_vs_time() containg a single variable
@@ -84,8 +83,6 @@ if ~exist('binMatrixFile', 'var')
     [data_file, data_path] = uigetfile('*.mat', 'Select .mat file');
     fprintf('Selected!\n');
     load(strcat(data_path, data_file));
-else
-    load(binMatrixFile);
 end
 
 %prompt for file where output should be saved and create folder
