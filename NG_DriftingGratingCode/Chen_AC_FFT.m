@@ -216,12 +216,13 @@ for cIndex = 1:numCells
     
     % find avg of the three strongest amps between 3.5 and 4.5 Hz, and normalize
     % according to 3*peak_avg
-    rank4Hz = sort( F(351:451), 'descend');
-    fourHzTop3(cIndex,2) = mean(rank4Hz(1:3)) / ((sum(F)/5000)*3);
-    if isnan(fourHzTop3(cIndex,2))
-        fourHzTop3(cIndex,2) = 0;
-    end
-    fourHzTop3(cIndex,1) = c;
+
+%     rank4Hz = sort( F(351:451), 'descend');
+%     fourHzTop3(cIndex,2) = mean(rank4Hz(1:3)) / ((sum(F)/5000)*3);
+%     if isnan(fourHzTop3(cIndex,2))
+%         fourHzTop3(cIndex,2) = 0;
+%     end
+%     fourHzTop3(cIndex,1) = c;
     
     
 % OUTPUT
@@ -241,9 +242,9 @@ for cIndex = 1:numCells
     AC_FFT_analysis{c} = s;        
 end
 
-    fourHzTop3 = sortrows(fourHzTop3, 2, 'descend');
-    s = struct('Cell_4HzScore', fourHzTop3);
-    AC_FFT_analysis{numCells + 1} = s;
+%     fourHzTop3 = sortrows(fourHzTop3, 2, 'descend');
+%     s = struct('Cell_4HzScore', fourHzTop3);
+%     AC_FFT_analysis{numCells + 1} = s;
     
 %save the output analysis
 if ~strcmpi(outputFolder, 'dont save')
