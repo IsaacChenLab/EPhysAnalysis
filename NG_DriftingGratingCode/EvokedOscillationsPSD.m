@@ -1,7 +1,13 @@
 function EvokedOscillationsPSD(outputFolder, channelsToPlot, CSCdata,...
                                times, screenTime, freqBand, freqBandName,...
                                duration, points_per_Hz)
-
+% Oscillatoins
+    % Gamma = 20-50 Hz
+    % Beta = 12-30 Hz
+    % Theta = 4-12 Hz
+    % Delta = 1-4 Hz
+    
+                           
 % FUNCTION ARGUMENTS
 %   outputFolder = name (in SINGLE quotes) of output folder which will be 
 %       created, and into which all of the output will be saved. If outputFolder 
@@ -69,7 +75,6 @@ sampleRate = (length(times)-1)/(times(end) - times(1));
 for c = channelsToPlot
     
     LFP = CSCdata(c,:);
-    times = times(1:length(LFP));
     
     for q = 1:2
         
@@ -148,7 +153,7 @@ for c = channelsToPlot
         semilogy(ax3,smooth_beforeFreqs,smooth_afterPSD./smooth_beforePSD);
         hold(ax3,'on')
         semilogy(ax3,smooth_beforeFreqs,ones(length(smooth_beforeFreqs),1),'k');
-        xlim([20 50]);
+
         
         title(ax3,['Fold Change Following' name2 'Channel' num2str(c)]);
         xlabel(ax3,'Freq (Hz)');
