@@ -125,6 +125,7 @@ for c = cellsToPlot
 end
 
 resultantVectors = sortrows(resultantVectors, 3, 'descend');
+resultantVectors(resultantVectors(:,2) < 0,2) = resultantVectors(resultantVectors(:,2) < 0,2) + 360;
 
 %save the file
 if ~strcmpi(outputFolder, 'dont save')
