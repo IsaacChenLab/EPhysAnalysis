@@ -124,8 +124,8 @@ for c = channelsToPlot
         temp_aPSD = reshape(afterPSD,floor(SF),[]);
         smooth_afterPSD = mean(temp_aPSD,1);
         
-        smooth_beforeFreqs = downsample(beforeFreqs,SF);
-        smooth_afterFreqs = downsample(afterFreqs,SF);
+        smooth_beforeFreqs = downsample(beforeFreqs,SF, floor(SF/2));
+        smooth_afterFreqs = downsample(afterFreqs,SF, floor(SF/2));
         
         
         %plot the LFP PSDs
