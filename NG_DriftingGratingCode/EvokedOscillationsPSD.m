@@ -1,21 +1,23 @@
-function EvokedOscillationsPSD(outputFolder, channelsToPlot, CSCdata,...
+function EvokedOscillationsPSD(outputFolder, channelsToPlot, redChannels, CSCdata,...
                                times, screenTime, freqBand, freqBandName,...
                                duration, points_per_Hz)
-% Oscillatoins
-    % Gamma = 20-50 Hz
-    % Beta = 12-30 Hz
-    % Theta = 4-12 Hz
-    % Delta = 1-4 Hz
-    
-                           
+% Oscillations
+% Gamma = 20-50 Hz
+% Beta = 12-30 Hz
+% Theta = 4-12 Hz
+% Delta = 1-4 Hz
+% Broadband = 1-60 Hz
+
 % FUNCTION ARGUMENTS
-%   outputFolder = name (in SINGLE quotes) of output folder which will be 
-%       created, and into which all of the output will be saved. If outputFolder 
+%   outputFolder = name (in SINGLE quotes) of output folder which will be
+%       created, and into which all of the output will be saved. If outputFolder
 %        = 'dont save' then no .fig or .mat files will be saved and the script
 %       will run much faster. If outputFolder is a complete path, then  '@'
 %       should be added to the beginning so that user won't be prompted to
 %       choose output directory later
 %   channelsToPlot = a vector containing the channels you want to analyze ie 1:32
+%   redChannels =  a vector of channels you want to plot as red, ie [] is
+%       all blue
 %   CSCData = a matrix where each row is the LFP for a channel (should have
 %       32 rows)
 %   times = a single row vector with a time corresponding to each column in
@@ -72,9 +74,62 @@ times = times-times(1);
 sampleRate = (length(times)-1)/(times(end) - times(1));
 
 
+% Screen On, All channels, figs
+all_f1 = figure;
+all_ax1 = axes('Position', [0.1 0.6 0.8 0.3]);
+all_ax2 = axes('Position', [0.1 0.1 0.8 0.3]);
+title(all_ax1,'Before Screen On - All Channels');
+title(all_ax2,'After Screen Off - All Channels');
+
+
+% Screen Off, All channels, figs
+all_f2 = figure;
+all_ax3 = axes('Position', [0.1 0.6 0.8 0.3]);
+all_ax4 = axes('Position', [0.1 0.1 0.8 0.3]);
+title(all_ax3,'Before Screen Off - All Channels');
+title(all_ax4,'After Screen Off - All Channels');
+
+
+%Screen Off, All channels, foldChange
+all_t1 = figure;
+all_ax5 = axes;
+semilogy(all_ax5,freqBand,ones(2,1),'k');
+title(all_ax5,'Fold Change Following Screen On - All Channels');
+
+
+%Screen Off, All channels, foldChange
+all_t2 = figure;
+all_ax6 = axes;
+semilogy(all_ax6,freqBand,ones(2,1),'k');
+title(all_ax6,'Fold Change Following Screen Off - All Channels');
+
+allChannelAxes = [all_ax1, all_ax2, all_ax3, all_ax4, all_ax5, all_ax6];
+
+
+%format all the AllChannel axes  
+for i = 1:6
+    AX = allChannelAxes(i);
+    xlim(AX, freqBand);
+    hold(AX, 'on');
+    xlabel(AX,'Freq (Hz)');
+    if i <= 4
+        ylabel(AX, 'Amplitude');
+    else
+        ylabel(AX, 'FoldChange');
+    end
+end
+
+
+
 for c = channelsToPlot
     
     LFP = CSCdata(c,:);
+    
+    if sum(c == redChannels) > 0
+        color = 'r';
+    else
+        color = 'b';
+    end
     
     for q = 1:2
         
@@ -135,8 +190,17 @@ for c = channelsToPlot
         ax2 = axes('Position', [0.1 0.1 0.8 0.3]);
         xlim(freqBand);
         
-        plot(ax1,smooth_beforeFreqs,smooth_beforePSD);
-        plot(ax2,smooth_afterFreqs,smooth_afterPSD);
+        plot(ax1,smooth_beforeFreqs,smooth_beforePSD, color);
+        plot(ax2,smooth_afterFreqs,smooth_afterPSD, color);
+        
+        if q == 1
+            plot(all_ax1,smooth_beforeFreqs,smooth_beforePSD, color);
+            plot(all_ax2,smooth_afterFreqs,smooth_afterPSD, color);
+        else
+            plot(all_ax3,smooth_beforeFreqs,smooth_beforePSD, color);
+            plot(all_ax4,smooth_afterFreqs,smooth_afterPSD, color);
+        end
+            
         
         title(ax1,['Before' name2 'Channel', num2str(c)]);
         xlabel(ax1,'Freq (Hz)');
@@ -150,18 +214,38 @@ for c = channelsToPlot
         %plot the FoldChange plot
         t = figure;
         ax3 = axes;
-        semilogy(ax3,smooth_beforeFreqs,smooth_afterPSD./smooth_beforePSD);
+        semilogy(ax3,smooth_beforeFreqs,smooth_afterPSD./smooth_beforePSD, color);
         hold(ax3,'on')
         semilogy(ax3,smooth_beforeFreqs,ones(length(smooth_beforeFreqs),1),'k');
-
         
         title(ax3,['Fold Change Following' name2 'Channel' num2str(c)]);
         xlabel(ax3,'Freq (Hz)');
         ylabel(ax3,'Fold Change');
         
-        saveas(f, strcat(target_folder, slash, name, '.fig'));
-        saveas(t, strcat(target_folder, slash, name,'_foldChange.fig'));
+        if q == 1
+            semilogy(all_ax5,smooth_beforeFreqs,smooth_afterPSD./smooth_beforePSD, color);
+        else
+            semilogy(all_ax6,smooth_beforeFreqs,smooth_afterPSD./smooth_beforePSD, color);
+        end
+        
+        %save the figures
+        if ~strcmpi(outputFolder,'dont save')
+            saveas(f, strcat(target_folder, slash, name, '.fig'));
+            saveas(t, strcat(target_folder, slash, name,'_foldChange.fig'));
+        end
     end
-    
-    
 end
+
+
+if ~strcmpi(outputFolder,'dont save')
+    saveas(all_f1, strcat(target_folder, slash, 'AllChannels_ScreenOn.fig'));
+    saveas(all_t1, strcat(target_folder, slash, 'AllChannels_ScreenOn_foldChange.fig'));
+    saveas(all_f2, strcat(target_folder, slash, 'AllChannels_ScreenOff.fig'));
+    saveas(all_t2, strcat(target_folder, slash, 'AllChannels_ScreenOff_foldChange.fig'));
+end
+
+
+
+end
+
+
