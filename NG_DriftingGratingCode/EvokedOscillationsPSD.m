@@ -139,7 +139,7 @@ for c = channelsToPlot
         plot(ax2,smooth_afterFreqs,smooth_afterPSD);
         
         title(ax1,['Before' name2 'Channel', num2str(c)]);
-        xlabel(ax1,'Time (Hz)');
+        xlabel(ax1,'Freq (Hz)');
         ylabel(ax1,'Amplitude');
         
         title(ax2,['After' name2 'Channel', num2str(c)]);
