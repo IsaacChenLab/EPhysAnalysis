@@ -1,5 +1,5 @@
 function EvokedOscillations(outputFolder, channelsToPlot, redChannels,...
-                            CSCData, times, screenTime, duration)
+                            CSCData, times, screenTime, duration, loneChannels)
 
 % FUNCTION ARGUMENTS
 %   outputFolder = name (in SINGLE quotes) of output folder which will be
@@ -18,6 +18,9 @@ function EvokedOscillations(outputFolder, channelsToPlot, redChannels,...
 %       came on. Second number is the time the screen turns off.
 %   duration = the number of seconds before and after the screen was turned
 %       on/off that will be plotted
+%   loneChannels = optional; set to 'no lone channels' if you dont want to
+%       plot an of the channels individually, only the one big plot with all
+%       the channels together
 
 % PLOTS GENERATED
 %   1. plot at the time when the screen turned on (each channel, and all
@@ -103,35 +106,35 @@ for c = channelsToPlot
         startIndex = floor((focus-duration)*sampleRate);
         stopIndex = floor((focus+duration)*sampleRate);
         
-        f = figure;
-        ax2 = axes;
-        hold(ax2,'on');
-        
-        plot( ctimes(startIndex : stopIndex),LFP(startIndex : stopIndex), color);
-        line([focus,focus], ylim(ax2), 'Color', 'red','LineWidth',2.5);
-        
-        xlim([focus-duration focus+duration]);
-        
-        curtick = get(gca, 'XTick');
-        set(gca, 'XTickLabel', cellstr(num2str(curtick(:))));
-        curtick = get(gca, 'YTick');
-        set(gca, 'YTickLabel', cellstr(num2str(curtick(:))));
-        
-        title(ax2,['LFP Channel' num2str(c) name2]);
-        xlabel(ax2,'Time (s)');
-        ylabel(ax2,'Local Field Potential (microvolts)');
-        
         if q == 1
             plot(all_ax1,ctimes(startIndex : stopIndex),LFP(startIndex : stopIndex), color);
         else
             plot(all_ax2,ctimes(startIndex : stopIndex),LFP(startIndex : stopIndex), color);
         end
         
-        if ~strcmpi(outputFolder,'dont save')
-            saveas(f, strcat(target_folder, slash, name, '.fig'));
-        end
+        if ~exist('loneChannels','var') || ~strcmpi(loneChannels, 'no lone channels')
+            f = figure;
+            ax2 = axes;
+            hold(ax2,'on');
+            xlim([focus-duration focus+duration]);
+            
+            plot( ctimes(startIndex : stopIndex),LFP(startIndex : stopIndex), color);
+            line([focus,focus], ylim(ax2), 'Color', 'red','LineWidth',2.5);
+            
+            curtick = get(gca, 'XTick');
+            set(gca, 'XTickLabel', cellstr(num2str(curtick(:))));
+            curtick = get(gca, 'YTick');
+            set(gca, 'YTickLabel', cellstr(num2str(curtick(:))));
+            
+            title(ax2,['LFP Channel' num2str(c) name2]);
+            xlabel(ax2,'Time (s)');
+            ylabel(ax2,'Local Field Potential (microvolts)');
+            
+            if ~strcmpi(outputFolder,'dont save')
+                saveas(f, strcat(target_folder, slash, name, '.fig'));
+            end
+        end  
     end
-    
 end
 
 plot(all_ax1,[screenOnTime,screenOnTime], ylim(all_ax1), 'Color', 'red','LineWidth',2.5);
