@@ -1,8 +1,9 @@
-function EvokedOscillations(outputFolder, channelsToPlot, CSCData, times, screenTime, duration)
+function EvokedOscillations(outputFolder, channelsToPlot, redChannels,...
+                            CSCData, times, screenTime, duration)
 
 % FUNCTION ARGUMENTS
-%   outputFolder = name (in SINGLE quotes) of output folder which will be 
-%       created, and into which all of the output will be saved. If outputFolder 
+%   outputFolder = name (in SINGLE quotes) of output folder which will be
+%       created, and into which all of the output will be saved. If outputFolder
 %        = 'dont save' then no .fig or .mat files will be saved and the script
 %       will run much faster. If outputFolder is a complete path, then  '@'
 %       should be added to the beginning so that user won't be prompted to
@@ -19,9 +20,11 @@ function EvokedOscillations(outputFolder, channelsToPlot, CSCData, times, screen
 %       on/off that will be plotted
 
 % PLOTS GENERATED
-%   1. plot of the entire LFP
-%   2. plot at the time when the screen turned on
-%   2. plot at the time when the screen turned off
+%   1. plot at the time when the screen turned on (each channel, and all
+%       channels together)
+%   2. plot at the time when the screen turned off (each channel, and all
+%       channels together)
+%
 
 
 
@@ -49,52 +52,62 @@ times = times-times(1);
 sampleRate = (length(times)-1)/(times(end) - times(1));
 
 
+%set up the figures with all the channels plotted together
+all_f1 = figure;
+all_ax1 = axes;
+
+xlim([screenOnTime-duration screenOnTime+duration]);
+title(all_ax1, 'All Channels -- Screen On');
+
+all_f2 = figure;
+all_ax2 = axes;
+
+xlim([screenOffTime-duration screenOffTime+duration]);
+title(all_ax2, 'All Channels -- Screen Off');
+
+for AX = [all_ax1 all_ax2]
+    curtick = get(AX, 'XTick');
+    set(AX, 'XTickLabel', cellstr(num2str(curtick(:))));
+    curtick = get(AX, 'YTick');
+    set(AX, 'YTickLabel', cellstr(num2str(curtick(:))));
+    
+    xlabel(AX,'Time (s)');
+    ylabel(AX,'Local Field Potential (microvolts)');
+    
+    hold(AX, 'on');
+end
+
+
 for c = channelsToPlot
+    
+    if sum(c == redChannels) > 0
+        color = 'r';
+    else
+        color = 'b';
+    end
     
     LFP = CSCData(c,:);
     ctimes = times(1:length(LFP));
     
-    name = ['GammaOsc_Channel' num2str(c) '_wholeplot'];
-    
-    wholePlot = figure;
-    ax1 = axes;
-    hold(ax1,'on');
-    plot(ctimes,LFP);
-    line([screenOnTime,screenOnTime], ylim(ax1), 'Color', 'red','LineWidth',2.5);
-    line([screenOffTime,screenOffTime], ylim(ax1), 'Color', 'red','LineWidth',2.5);
-    
-    xticks(ctimes(1):100:ctimes(end));
-    
-    curtick = get(gca, 'XTick');
-    set(gca, 'XTickLabel', cellstr(num2str(curtick(:))));
-    curtick = get(gca, 'YTick');
-    set(gca, 'YTickLabel', cellstr(num2str(curtick(:))));
-    
-    title(ax1,['GammaOsc Channel' num2str(c) ' wholeplot']);
-    xlabel(ax1,'Time (s)');
-    ylabel(ax1,'Local Field Potential');
-    
-    saveas(wholePlot, strcat(target_folder, slash, name, '.fig'));
-    
-    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
     for q = 1:2
         if q == 1
             focus = screenOnTime;
-            name = ['GammaOsc_Channel' num2str(c) '_screenOnPlot'];
+            name = ['LFP_Channel' num2str(c) '_screenOnPlot'];
             name2 = ' screenOnPlot';
         else
             focus = screenOffTime;
-            name = ['GammaOsc_Channel' num2str(c) '_screenOffPlot'];
+            name = ['LFP_Channel' num2str(c) '_screenOffPlot'];
             name2 = ' screenOffPlot';
         end
+        
+        startIndex = floor((focus-duration)*sampleRate);
+        stopIndex = floor((focus+duration)*sampleRate);
         
         f = figure;
         ax2 = axes;
         hold(ax2,'on');
-        startIndex = floor((focus-duration)*sampleRate);
-        stopIndex = floor((focus+duration)*sampleRate);
-        plot( ctimes(startIndex : stopIndex),LFP(startIndex : stopIndex));
+        
+        plot( ctimes(startIndex : stopIndex),LFP(startIndex : stopIndex), color);
         line([focus,focus], ylim(ax2), 'Color', 'red','LineWidth',2.5);
         
         xlim([focus-duration focus+duration]);
@@ -104,12 +117,29 @@ for c = channelsToPlot
         curtick = get(gca, 'YTick');
         set(gca, 'YTickLabel', cellstr(num2str(curtick(:))));
         
-        title(ax2,['GammaOsc Channel' num2str(c) name2]);
+        title(ax2,['LFP Channel' num2str(c) name2]);
         xlabel(ax2,'Time (s)');
-        ylabel(ax2,'Local Field Potential');
+        ylabel(ax2,'Local Field Potential (microvolts)');
         
-        saveas(f, strcat(target_folder, slash, name, '.fig'));
+        if q == 1
+            plot(all_ax1,ctimes(startIndex : stopIndex),LFP(startIndex : stopIndex), color);
+        else
+            plot(all_ax2,ctimes(startIndex : stopIndex),LFP(startIndex : stopIndex), color);
+        end
+        
+        if ~strcmpi(outputFolder,'dont save')
+            saveas(f, strcat(target_folder, slash, name, '.fig'));
+        end
     end
     
-    
+end
+
+plot(all_ax1,[screenOnTime,screenOnTime], ylim(all_ax1), 'Color', 'red','LineWidth',2.5);
+plot(all_ax2,[screenOffTime,screenOffTime], ylim(all_ax2), 'Color', 'red','LineWidth',2.5);
+
+if ~strcmpi(outputFolder,'dont save')
+    saveas(all_f1, strcat(target_folder, slash, 'AllChannels_ScreenOn.fig'));
+    saveas(all_f2, strcat(target_folder, slash, 'AllChannels_ScreenOff.fig'));
+end
+
 end
