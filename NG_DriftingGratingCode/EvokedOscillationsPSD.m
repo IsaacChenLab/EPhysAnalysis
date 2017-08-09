@@ -140,11 +140,11 @@ for c = channelsToPlot
         
         title(ax1,['Before' name2 'Channel', num2str(c)]);
         xlabel(ax1,'Time (Hz)');
-        ylabel(ax1,'Local Field Potential');
+        ylabel(ax1,'Amplitude');
         
         title(ax2,['After' name2 'Channel', num2str(c)]);
         xlabel(ax2,'Freq (Hz)');
-        ylabel(ax2,'Local Field Potential');
+        ylabel(ax2,'Amplitude');
         
         
         %plot the FoldChange plot
