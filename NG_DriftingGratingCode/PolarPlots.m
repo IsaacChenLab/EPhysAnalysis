@@ -110,9 +110,6 @@ for c = cellsToPlot
     end
     
     %compute orientation selectivity (ie the resultant vector)
-    %c_x = sum( M(c,:) .* cos(rads)) / sum(M(c,:));
-    %c_y = sum( M(c,:) .* sin(rads)) / sum(M(c,:));
-    %selectivity = sqrt(c_x.^2 + c_y.^2);
     c_x = sum( M(c,:) .* cos(rads));
     c_y = sum( M(c,:) .* sin(rads));
     selectivity = sqrt(c_x.^2 + c_y.^2) / sum(M(c,:));
@@ -121,6 +118,7 @@ for c = cellsToPlot
     if(c_x < 0)
         pref_theta = pref_theta+pi;
     end
+    
     resultantVectors(c, :) = [c rad2deg(pref_theta) selectivity];
     
     %plot orientation selectivity
