@@ -37,7 +37,7 @@ function AC_PSD_analysis = Chen_AC_PSD(outputFolder, startTime, endTime,...
 % PLOTS GENERATED
 %   1. Plot of bin'd firing rate over time
 %   2. Auto-correlelogram
-%   3. Fourier transform
+%   3. Power spectrum
 %   --- figures are displayed and saved in the output folder ---
 
 % OUTPUT
@@ -203,7 +203,7 @@ for cIndex = 1:numCells
     PSD_plot = figure('Name', PSD_name, 'NumberTitle', 'off');
     ax3 = axes;
     plot(ax3, freqs(2:end), F(2:end));  %dont plot DC, screws up the axis
-    title(ax3, ['Fourier Transform of Firing Rate vs Time for Cell ' num2str(c)]);
+    title(ax3, ['Power Spectrum of Firing Rate vs Time for Cell ' num2str(c)]);
     xlabel(ax3, 'Frequency (Hz)');
     ylabel(ax3, 'Amplitude');
        
