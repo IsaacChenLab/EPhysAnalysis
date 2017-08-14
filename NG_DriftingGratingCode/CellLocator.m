@@ -1,5 +1,4 @@
-function Cell_Locations = CellLocator(outputFolder, cellCount, redCells, blueCells,...
-                                      show_figs, spikesFile)
+function Cell_Locations = CellLocator(outputFolder, cellCount, redCells, blueCells, spikesFile)
  
 % INPUT
 %   outputFolder = name (in SINGLE quotes) of output folder which will be 
@@ -33,34 +32,12 @@ function Cell_Locations = CellLocator(outputFolder, cellCount, redCells, blueCel
 %       Column 3 = corresponding x coordinate
 %       Column 4 = correspinding y coordinate
  
-%handle some input
-if exist('show_figs', 'var') && strcmp(show_figs, 'dont show')
-   set(0,'DefaultFigureVisible','off');
-else
-    set(0,'DefaultFigureVisible','on');
-end
-
-% old code
-% if ~exist('threshold', 'var')
-%    threshold = 0.6;
-% end
  
 % make sure that channelLocations.mat is in the same directory as this script
 % this is where channels_xy comes from
 load('channelLocations.mat');
  
-% get and read the Orientation Selectivity file
-% this is where resultantVectors comes from
-% if ~exist('selectivityFile', 'var')  
-%     fprintf("\tSelect orientation selectivity file...");
-%     [data_file, data_path] = uigetfile('*.mat','Select .mat file...');
-%     fprintf("Selected!\n");
-%     selectivityFile = strcat(data_path, data_file);
-%     load(selectivityFile);
-% else
-%     resultantVectors = selectivityFile;
-% end
- 
+
 % get and load the spikes.mat file
 % this is where dvSpikes comes from
 if ~exist('spikesFile', 'var')
@@ -106,10 +83,6 @@ for i = 1:cellCount
     end
 end
 
-% old code
-% redCells = resultantVectors(resultantVectors(:,3) > threshold, 1);
-% blueCells = setdiff(allCells, redCells);
-
 allCells = 1:cellCount;
 blackCells = setdiff(allCells,redCells);
 blackCells = setdiff(blackCells,blueCells);
@@ -132,9 +105,10 @@ blue_repeats(blue_xy(:,1) == 0) = blue_repeats(blue_xy(:,1) == 0) * -1;
 black_repeats(black_xy(:,1) == 0) = black_repeats(black_xy(:,1) == 0) * -1;
  
 % apply the repeat offset to the x coordinate
-red_xy_repeats = red_xy + [red_repeats*1.2 zeros(length(redCells),1)];
-blue_xy_repeats = blue_xy + [blue_repeats*1.2 zeros(length(blueCells),1)];
-black_xy_repeats = black_xy + [black_repeats*1.2 zeros(length(blackCells),1)];
+offset = 14;
+red_xy_repeats = red_xy + [red_repeats*offset zeros(length(redCells),1)];
+blue_xy_repeats = blue_xy + [blue_repeats*offset zeros(length(blueCells),1)];
+black_xy_repeats = black_xy + [black_repeats*offset zeros(length(blackCells),1)];
 
 %plot the points
 f = figure('Name', 'Cell Locations', 'NumberTitle','off');
@@ -145,15 +119,15 @@ scatter( ax1, red_xy_repeats(:,1), red_xy_repeats(:,2),25,...
 scatter( ax1, blue_xy_repeats(:,1), blue_xy_repeats(:,2),25,...
          'filled', 'b',  'DisplayName', 'Putative Complex Cells');
 scatter( ax1, black_xy_repeats(:,1), black_xy_repeats(:,2),25,...
-         'filled', 'k',  'DisplayName', 'All Other Cells');
+          'k',  'DisplayName', 'All Other Cells');
 
 % format the plot
-xlim(ax1, [-25, 50]);
-ylim(ax1, [-200, 900]);
+xlim(ax1, [-447.5, 462.5]);
+ylim(ax1, [-100, 800]);
 title(ax1, 'Relative Location of Detected Cells Based on Nearest Probe');
 xlabel(ax1, 'Microns');
 ylabel(ax1, 'Microns');
-legend('show');
+%legend('show');
  
 Cell_Locations = struct('Putative_Simple_Cells', [redCells' redChannels red_xy],...
                         'Putative_Complex_Cells', [blueCells' blueChannels blue_xy],...
