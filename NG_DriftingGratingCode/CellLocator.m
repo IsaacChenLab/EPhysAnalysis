@@ -9,10 +9,8 @@ function Cell_Locations = CellLocator(outputFolder, cellCount, redCells, blueCel
 %       should be added to the beginning so that user won't be prompted to
 %       choose output directory later.
 %   cellsCount = number of cells in the recording
-%   threshold = optional; selectivity threshold that a cell must meet to be
-%       considered "orientation selective". All cells have a selectivity metric
-%       between 0 and 1 listed in Orientaton_Selectivity.mat. Default threshold
-%       is 0.6
+%   redCells, blueCells = each are vectors of the cells you want to be red
+%       and blue respectively. All other cells are black
 %   show_figs = optional; set to 'dont show' if you don't want the figure
 %       windows to pop up. They'll still be saved unless 'dont save' is
 %       specified
