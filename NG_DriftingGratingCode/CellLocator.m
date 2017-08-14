@@ -10,31 +10,28 @@ function Cell_Locations = CellLocator(outputFolder, cellCount, redCells, blueCel
 %       choose output directory later.
 %   cellsCount = number of cells in the recording
 %   redCells, blueCells = each are vectors of the cells you want to be red
-%       and blue respectively. All other cells are black
+%       and blue respectively. By convention, the redCells should be the
+%       simple cells and the blue should be the complex cells. All other
+%       cells are black.
 %   show_figs = optional; set to 'dont show' if you don't want the figure
 %       windows to pop up. They'll still be saved unless 'dont save' is
 %       specified
-%  selectivityFile =  optional; the complete path for an
-%       Orientation_Selectivity.mat file (output of PolarPlots.m). If not
-%       given, user will be prompted to browse for the file.
-%  spikesFile =  optional; the complete path for an
-%       Spikes.mat file. If not given, user will be prompted to browse for
-%       the file.
+%  spikesFile =  optional; spikes.mat file. If not given, user will be prompted
+%       to browse for the file.
  
 % PLOTS GENERATED
 %   1. Plot of relative locations of all the cells detected, based on which
-%       probe they are nearest to. The orientation selective cells are red and
-%       all other cells are blue.
+%       probe they are nearest to. re
 %   --- figures are displayed and saved in the output folder ---
  
 % OUTPUT
-%   Cell_Locations is a struct with two fields: Selective_Cells and
-%       NonSelective_Cells. Each field contains an matrix with 4 columns. Each
-%       row represents a different cell.
-%   Column 1 = the cell number
-%   Column 2 = the channel (ie probe) to which that cell is closest
-%   Column 3 = corresponding x coordinate
-%   Column 4 = correspinding y coordinate
+%   Cell_Locations = struct with three fields: Simple Cells, Complex
+%       Cells, All Other Cells. Each field contains an matrix with 4 columns.
+%       Each row represents a different cell.
+%       Column 1 = the cell number
+%       Column 2 = the channel (ie probe) to which that cell is closest
+%       Column 3 = corresponding x coordinate
+%       Column 4 = correspinding y coordinate
  
 %handle some input
 if exist('show_figs', 'var') && strcmp(show_figs, 'dont show')
