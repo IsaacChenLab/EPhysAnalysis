@@ -1,4 +1,4 @@
-function EvokedOscillationsPSD(outputFolder, channelsToPlot, redChannels, CSCdata,...
+function LFP_Power = EvokedOscillationsPSD(outputFolder, channelsToPlot, redChannels, CSCdata,...
                                times, screenTime, freqBand, freqBandName,...
                                duration, points_per_Hz, logAxis, loneChannels)
 
@@ -36,6 +36,17 @@ function EvokedOscillationsPSD(outputFolder, channelsToPlot, redChannels, CSCdat
 %       plot an of the channels individually, only the one big plot with all
 %       the channels together
 
+% OUTPUT
+%    LFP_Power is a 1:33 cell array. Cell 33 contains a struct that records
+%       the paramter settings that were used when generating the data.
+%       Every other cell represents a channel. Each cell contains a struct 
+%       with two fields: ScreenOn and ScreenOff. Each field is a matrix with 
+%       four columns.
+%    Column 1 = the frequencies ie x axis of all the plots
+%    Column 2 = power before the stimulus change
+%    Column 3 = power after the stimulus change
+%    Column 4 = fold change fold chnage from before to after
+
 % PLOTS GENERATED
 %   1. Plot of PSD before and after screen turns ON, for each channel and
 %       all channels together
@@ -50,7 +61,7 @@ function EvokedOscillationsPSD(outputFolder, channelsToPlot, redChannels, CSCdat
 %   Beta = 12-30 Hz
 %   Theta = 4-12 Hz
 %   Delta = 1-4 Hz
-%   Broadband = 1-100 Hz
+%   Broadband = 1-101 Hz
 
 % COLORS
 %   - black is always before the stimulus change and green is after
@@ -58,7 +69,6 @@ function EvokedOscillationsPSD(outputFolder, channelsToPlot, redChannels, CSCdat
 %       "allChannels" plots
 
 green = [0 0.72 0.24];
-
 
 SF = duration / points_per_Hz;
 if SF ~= floor(SF)
@@ -88,7 +98,6 @@ screenOffTime = screenOffTime-times(1);
 times = times-times(1);
 sampleRate = (length(times)-1)/(times(end) - times(1));
 
-
 % Screen On, All channels, figs
 all_f1 = figure;
 all_on_ax = axes;
@@ -99,16 +108,15 @@ all_f2 = figure;
 all_off_ax = axes;
 title(all_off_ax,'Screen Off - All Channels - Before and After');
 
-%Screen Off, All channels, foldChange
+% Screen Off, All channels, foldChange
 all_t1 = figure;
 all_on_fold_ax = axes;
 title(all_on_fold_ax,'Fold Change Following Screen On - All Channels');
 
-%Screen Off, All channels, foldChange
+% Screen Off, All channels, foldChange
 all_t2 = figure;
 all_off_fold_ax = axes;
 title(all_off_fold_ax,'Fold Change Following Screen Off - All Channels');
-
 
 allChannelAxes = [all_on_ax, all_off_ax, all_on_fold_ax, all_off_fold_ax];
 
@@ -129,11 +137,12 @@ for i = 1:4
     hold(AX, 'on');
 end
 
-
+LFP_Power = cell(33,1);
 
 for c = channelsToPlot
     
     LFP = CSCdata(c,:);
+    s = struct();
     
     if sum(c == redChannels) > 0
         color = 'r';
@@ -146,11 +155,11 @@ for c = channelsToPlot
         if q == 1
             focus = screenOnTime;
             name = [freqBandName 'PSD_Channel' num2str(c) '_ScreenOn'];
-            name2 = ' Screen On ';
+            name2 = ' Screen_On ';
         else
             focus = screenOffTime;
             name = [freqBandName 'PSD_Channel' num2str(c) '_ScreenOff'];
-            name2 = ' Screen Off ';
+            name2 = ' Screen_Off ';
         end
         
         %figure out what times to plot based on when screen goes on and off
@@ -160,7 +169,6 @@ for c = channelsToPlot
         beforeLFP = LFP(startIndex:focusIndex);
         afterLFP = LFP(focusIndex:stopIndex);
         
-        
         %compute power spectrum
         beforePSD = periodogram(beforeLFP,rectwin(length(beforeLFP)),length(beforeLFP), sampleRate);
         beforePSD = beforePSD(1:end-1);
@@ -168,42 +176,38 @@ for c = channelsToPlot
         afterPSD = periodogram(afterLFP,rectwin(length(afterLFP)),length(afterLFP), sampleRate);
         afterPSD = afterPSD(1:end-1);
         
-        
         %set the X axis
-        beforeFreqs = (0:length(beforePSD)/2) / duration;
-        afterFreqs = (0:length(afterPSD)/2) / duration;
-        
-        
+        freqs = (0:length(beforePSD)/2) / duration;
+   
         %only plot the frequency band of interest
-        xlimit = [duration*freqBand(1), duration*freqBand(2)-1];
+        xlimit = [duration*freqBand(1)+1, duration*freqBand(2)];
         beforePSD = beforePSD(xlimit(1):xlimit(2));
         afterPSD = afterPSD(xlimit(1):xlimit(2));
-        beforeFreqs = beforeFreqs(xlimit(1):xlimit(2));
-        afterFreqs = afterFreqs(xlimit(1):xlimit(2));
-        
+        freqs = freqs(xlimit(1):xlimit(2));
         
         %smooth out the PSD
+        smooth_freqs = downsample(freqs,SF, floor(SF/2));
         temp_bPSD = reshape(beforePSD,floor(SF),[]);
         smooth_beforePSD = mean(temp_bPSD,1);
-        
         temp_aPSD = reshape(afterPSD,floor(SF),[]);
         smooth_afterPSD = mean(temp_aPSD,1);
         
-        smooth_beforeFreqs = downsample(beforeFreqs,SF, floor(SF/2));
-        smooth_afterFreqs = downsample(afterFreqs,SF, floor(SF/2));
-        
+        %compute foldChange
+        foldChange = smooth_afterPSD./smooth_beforePSD;
         
         % add this channel to this all channels plots
         if q == 1
-            plot(all_on_ax,smooth_beforeFreqs,smooth_beforePSD, 'k');  %black
-            plot(all_on_ax,smooth_afterFreqs,smooth_afterPSD, 'Color', green);    %green
-            semilogy(all_on_fold_ax,smooth_beforeFreqs,smooth_afterPSD./smooth_beforePSD, color);
+            plot(all_on_ax, smooth_freqs, smooth_beforePSD, 'k');
+            plot(all_on_ax, smooth_freqs, smooth_afterPSD, 'Color', green);
+            semilogy(all_on_fold_ax, smooth_freqs, foldChange, color);
+            s.ScreenOn = [smooth_freqs' smooth_beforePSD' smooth_afterPSD' foldChange'];
         else
-            plot(all_off_ax,smooth_beforeFreqs,smooth_beforePSD, 'k');
-            plot(all_off_ax,smooth_afterFreqs,smooth_afterPSD, 'Color', green);
-            semilogy(all_off_fold_ax,smooth_beforeFreqs,smooth_afterPSD./smooth_beforePSD, color);
-        end
-               
+            plot(all_off_ax, smooth_freqs, smooth_beforePSD, 'k');
+            plot(all_off_ax, smooth_freqs, smooth_afterPSD, 'Color', green);
+            semilogy(all_off_fold_ax, smooth_freqs, foldChange, color);
+            s.ScreenOff = [smooth_freqs' smooth_beforePSD' smooth_afterPSD' foldChange'];
+        end        
+        
         if ~exist('loneChannels','var') || ~strcmpi(loneChannels, 'no lone channels')
             %plot the LFP PSDs
             f = figure;
@@ -214,20 +218,19 @@ for c = channelsToPlot
             hold(ax1,'on')
             xlim(freqBand);
             
-            plot(ax1,smooth_beforeFreqs,smooth_beforePSD, 'k');
-            plot(ax1,smooth_afterFreqs,smooth_afterPSD, 'Color', green);
+            plot(ax1,smooth_freqs,smooth_beforePSD, 'k');
+            plot(ax1,smooth_freqs,smooth_afterPSD, 'Color', green);
             
             title(ax1,['Before and After' name2 'Channel', num2str(c)]);
             xlabel(ax1,'Freq (Hz)');
             ylabel(ax1,'Amplitude');
             
-            
             %plot the FoldChange plot
             t = figure;
             ax_fold = axes;
-            semilogy(ax_fold,smooth_beforeFreqs,smooth_afterPSD./smooth_beforePSD, color);
+            semilogy(ax_fold,smooth_freqs,smooth_afterPSD./smooth_beforePSD, color);
             hold(ax_fold,'on')
-            semilogy(ax_fold,smooth_beforeFreqs,ones(length(smooth_beforeFreqs),1),'k');
+            semilogy(ax_fold,smooth_freqs,ones(length(smooth_freqs),1),'k');
             
             title(ax_fold,['Fold Change Following' name2 'Channel' num2str(c)]);
             xlabel(ax_fold,'Freq (Hz)');
@@ -238,17 +241,28 @@ for c = channelsToPlot
                 saveas(f, strcat(target_folder, slash, name, '.fig'));
                 saveas(t, strcat(target_folder, slash, name,'_foldChange.fig'));
             end
-        end
+        end    
     end
+    
+    LFP_Power{c} = s;
 end
 
+title(all_on_fold_ax,'Fold Change Following Screen On - All Channels');
+title(all_off_fold_ax,'Fold Change Following Screen Off - All Channels');
+
+args = struct('FreqBand', freqBand,...
+              'duration', duration,...
+              'points_per_Hz', points_per_Hz,...
+              'screenTime', screenTime);
+          
+LFP_Power{33} = args;
 
 if ~strcmpi(outputFolder,'dont save')
     saveas(all_f1, strcat(target_folder, slash, 'AllChannels_ScreenOn.fig'));
     saveas(all_t1, strcat(target_folder, slash, 'AllChannels_ScreenOn_foldChange.fig'));
     saveas(all_f2, strcat(target_folder, slash, 'AllChannels_ScreenOff.fig'));
     saveas(all_t2, strcat(target_folder, slash, 'AllChannels_ScreenOff_foldChange.fig'));
+    save(strcat(target_folder, slash, 'LFP_Power_Data.mat'), 'LFP_Power');
 end
-
 
 end
