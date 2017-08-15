@@ -1,4 +1,4 @@
-function EvokedOscillations(outputFolder, channelsToPlot, redChannels,...
+function Raw_LFPs = EvokedOscillations(outputFolder, channelsToPlot, redChannels,...
                             CSCData, times, screenTime, duration, loneChannels)
 
 % FUNCTION ARGUMENTS
@@ -27,8 +27,6 @@ function EvokedOscillations(outputFolder, channelsToPlot, redChannels,...
 %       channels together)
 %   2. plot at the time when the screen turned off (each channel, and all
 %       channels together)
-%
-
 
 
 if(ispc)
@@ -54,17 +52,14 @@ screenOffTime = screenOffTime-times(1);
 times = times-times(1);
 sampleRate = (length(times)-1)/(times(end) - times(1));
 
-
 %set up the figures with all the channels plotted together
 all_f1 = figure;
 all_ax1 = axes;
-
 xlim([screenOnTime-duration screenOnTime+duration]);
 title(all_ax1, 'All Channels -- Screen On');
 
 all_f2 = figure;
 all_ax2 = axes;
-
 xlim([screenOffTime-duration screenOffTime+duration]);
 title(all_ax2, 'All Channels -- Screen Off');
 
@@ -80,6 +75,7 @@ for AX = [all_ax1 all_ax2]
     hold(AX, 'on');
 end
 
+Raw_LFPs = cell(32,1);
 
 for c = channelsToPlot
     
@@ -91,6 +87,7 @@ for c = channelsToPlot
     
     LFP = CSCData(c,:);
     ctimes = times(1:length(LFP));
+    s = struct();
     
     for q = 1:2
         if q == 1
@@ -107,9 +104,11 @@ for c = channelsToPlot
         stopIndex = floor((focus+duration)*sampleRate);
         
         if q == 1
-            plot(all_ax1,ctimes(startIndex : stopIndex),LFP(startIndex : stopIndex), color);
+            plot(all_ax1, ctimes(startIndex:stopIndex), LFP(startIndex:stopIndex), color);
+            s.ScreenOn = [ctimes(startIndex:stopIndex)', LFP(startIndex:stopIndex)'];
         else
-            plot(all_ax2,ctimes(startIndex : stopIndex),LFP(startIndex : stopIndex), color);
+            plot(all_ax2, ctimes(startIndex:stopIndex), LFP(startIndex:stopIndex), color);
+            s.ScreenOff = [ctimes(startIndex:stopIndex)', LFP(startIndex:stopIndex)'];
         end
         
         if ~exist('loneChannels','var') || ~strcmpi(loneChannels, 'no lone channels')
@@ -135,6 +134,8 @@ for c = channelsToPlot
             end
         end  
     end
+    
+    Raw_LFPs{c} = s;
 end
 
 plot(all_ax1,[screenOnTime,screenOnTime], ylim(all_ax1), 'Color', 'red','LineWidth',2.5);
@@ -143,6 +144,7 @@ plot(all_ax2,[screenOffTime,screenOffTime], ylim(all_ax2), 'Color', 'red','LineW
 if ~strcmpi(outputFolder,'dont save')
     saveas(all_f1, strcat(target_folder, slash, 'AllChannels_ScreenOn.fig'));
     saveas(all_f2, strcat(target_folder, slash, 'AllChannels_ScreenOff.fig'));
+    save(strcat(target_folder, slash, 'LFP_Raw_Data.mat'), 'Raw_LFPs');
 end
 
 end
