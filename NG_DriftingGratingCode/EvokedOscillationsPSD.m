@@ -2,8 +2,6 @@ function EvokedOscillationsPSD(outputFolder, channelsToPlot, redChannels, CSCdat
                                times, screenTime, freqBand, freqBandName,...
                                duration, points_per_Hz, logAxis, loneChannels)
 
-
-
 % FUNCTION ARGUMENTS
 %   outputFolder = name (in SINGLE quotes) of output folder which will be
 %       created, and into which all of the output will be saved. If outputFolder
@@ -39,11 +37,14 @@ function EvokedOscillationsPSD(outputFolder, channelsToPlot, redChannels, CSCdat
 %       the channels together
 
 % PLOTS GENERATED
-%   1. Double axis plot of PSD before and after screen turns ON
+%   1. Plot of PSD before and after screen turns ON, for each channel and
+%       all channels together
 %   2. Log scale plot of fold change in power comparing after the screen
-%   has been turned on to before
-%   3,4. Same as 1 and 2 but for screen turning off
-
+%       has been turned on to before, for each channel and all channels
+%       together
+%   3,4. Same as 1 and 2 but for screen turning off, for each channel and
+%       all channels together
+ 
 % FREQUENCY BANDS
 %   Gamma = 20-50 Hz
 %   Beta = 12-30 Hz
@@ -93,43 +94,39 @@ all_f1 = figure;
 all_on_ax = axes;
 title(all_on_ax,'Screen On - All Channels - Before and After');
 
-
 % Screen Off, All channels, figs
 all_f2 = figure;
 all_off_ax = axes;
 title(all_off_ax,'Screen Off - All Channels - Before and After');
 
-
 %Screen Off, All channels, foldChange
 all_t1 = figure;
 all_on_fold_ax = axes;
-semilogy(all_on_fold_ax,freqBand,ones(2,1),'k');
 title(all_on_fold_ax,'Fold Change Following Screen On - All Channels');
-
 
 %Screen Off, All channels, foldChange
 all_t2 = figure;
 all_off_fold_ax = axes;
-semilogy(all_off_fold_ax,freqBand,ones(2,1),'k');
 title(all_off_fold_ax,'Fold Change Following Screen Off - All Channels');
 
-allChannelAxes = [all_on_ax, all_off_ax, all_on_fold_ax, all_off_fold_ax];
 
+allChannelAxes = [all_on_ax, all_off_ax, all_on_fold_ax, all_off_fold_ax];
 
 %format all the AllChannel axes
 for i = 1:4
     AX = allChannelAxes(i);
     xlim(AX, freqBand);
+    xlabel(AX,'Freq (Hz)');
     if exist('logAxis','var') && strcmpi(logAxis, 'log')
         set(AX, 'Yscale', 'log');
     end
-    hold(AX, 'on');
-    xlabel(AX,'Freq (Hz)');
     if i <= 2
         ylabel(AX, 'Amplitude');
     else
         ylabel(AX, 'FoldChange');
+        semilogy(AX,freqBand,ones(2,1),'k');
     end
+    hold(AX, 'on');
 end
 
 
@@ -212,8 +209,7 @@ for c = channelsToPlot
             f = figure;
             ax1 = axes;
             if exist('logAxis','var') && strcmpi(logAxis, 'log')
-                set(ax1, 'Yscale', 'log');
-                
+                set(ax1, 'Yscale', 'log');  
             end
             hold(ax1,'on')
             xlim(freqBand);
