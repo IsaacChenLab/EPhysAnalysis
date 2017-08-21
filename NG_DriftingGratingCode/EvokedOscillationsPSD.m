@@ -1,5 +1,5 @@
-function LFP_Power = EvokedOscillationsPSD(outputFolder, channelsToPlot, redChannels, CSCdata,...
-                               times, screenTime, freqBand, freqBandName,...
+function LFP_Power = EvokedOscillationsPSD(outputFolder, channelsToPlot, redChannels,...
+                                CSCdata, times, screenTime, freqBand, freqBandName,...
                                duration, points_per_Hz, logAxis, loneChannels)
 
 % FUNCTION ARGUMENTS
@@ -155,11 +155,11 @@ for c = channelsToPlot
         if q == 1
             focus = screenOnTime;
             name = [freqBandName 'PSD_Channel' num2str(c) '_ScreenOn'];
-            name2 = ' Screen_On ';
+            name2 = ' ScreenOn ';
         else
             focus = screenOffTime;
             name = [freqBandName 'PSD_Channel' num2str(c) '_ScreenOff'];
-            name2 = ' Screen_Off ';
+            name2 = ' ScreenOff ';
         end
         
         %figure out what times to plot based on when screen goes on and off
@@ -193,7 +193,11 @@ for c = channelsToPlot
         smooth_afterPSD = mean(temp_aPSD,1);
         
         %compute foldChange
-        foldChange = smooth_afterPSD./smooth_beforePSD;
+        if q == 1
+            foldChange = smooth_afterPSD./smooth_beforePSD;
+        else
+            foldChange = smooth_beforePSD./smooth_afterPSD;
+        end
         
         % add this channel to this all channels plots
         if q == 1
@@ -202,8 +206,8 @@ for c = channelsToPlot
             semilogy(all_on_fold_ax, smooth_freqs, foldChange, color);
             s.ScreenOn = [smooth_freqs' smooth_beforePSD' smooth_afterPSD' foldChange'];
         else
-            plot(all_off_ax, smooth_freqs, smooth_beforePSD, 'k');
-            plot(all_off_ax, smooth_freqs, smooth_afterPSD, 'Color', green);
+            plot(all_off_ax, smooth_freqs, smooth_beforePSD, 'Color', green);
+            plot(all_off_ax, smooth_freqs, smooth_afterPSD, 'k');
             semilogy(all_off_fold_ax, smooth_freqs, foldChange, color);
             s.ScreenOff = [smooth_freqs' smooth_beforePSD' smooth_afterPSD' foldChange'];
         end        
@@ -218,8 +222,13 @@ for c = channelsToPlot
             hold(ax1,'on')
             xlim(freqBand);
             
-            plot(ax1,smooth_freqs,smooth_beforePSD, 'k');
-            plot(ax1,smooth_freqs,smooth_afterPSD, 'Color', green);
+            if q == 1 
+                plot(ax1, smooth_freqs, smooth_beforePSD, 'k');
+                plot(ax1, smooth_freqs, smooth_afterPSD, 'Color', green);
+            else
+                plot(ax1, smooth_freqs, smooth_beforePSD, 'Color', green);
+                plot(ax1, smooth_freqs, smooth_afterPSD, 'k');
+            end
             
             title(ax1,['Before and After' name2 'Channel', num2str(c)]);
             xlabel(ax1,'Freq (Hz)');
@@ -228,9 +237,9 @@ for c = channelsToPlot
             %plot the FoldChange plot
             t = figure;
             ax_fold = axes;
-            semilogy(ax_fold,smooth_freqs,smooth_afterPSD./smooth_beforePSD, color);
+            semilogy(ax_fold, smooth_freqs, foldChange, color);
             hold(ax_fold,'on')
-            semilogy(ax_fold,smooth_freqs,ones(length(smooth_freqs),1),'k');
+            semilogy(ax_fold, smooth_freqs, ones(length(smooth_freqs),1), 'k');
             
             title(ax_fold,['Fold Change Following' name2 'Channel' num2str(c)]);
             xlabel(ax_fold,'Freq (Hz)');
