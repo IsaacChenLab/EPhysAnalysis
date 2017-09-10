@@ -25,4 +25,4 @@ for c = CSCs
 end
 
 saveFile = fullfile(CSC_folder, [outputFile '.mat']);
-save(saveFile,'output');
+save(saveFile,'output','-v7.3');
